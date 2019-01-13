@@ -7,7 +7,48 @@
 
 #define knoten 4
 
+void readDB(int zahlenarray[][knoten]){
+	FILE *fp;
+	char temp;
+	int i = 0;
+	int j=0;
+	int zahl[100]={};
+	int zeile=0;
+	fp = fopen("knoten.txt", "r");
+	char array[20][knoten];
+	int k=0;
+	//int zahlenarray[knoten][knoten];
+	if(fp==NULL) {
+		printf("Konnte Datei nicht öffnen!\n");
+	}
+	//Lese alle Zahlen in ein char array
+	while((temp=fgetc(fp))!=EOF){
+		if(temp==10|| temp==32){
+			zeile++;
+			i=0;
+		}else{
+			array[zeile][i]=temp;
+			i++;
+		}
+	}
 
+	//string to int
+	for(i=0;i<zeile;i++){
+		zahl[i]=atoi(array[i]);
+	}
+
+	//ints in 4x4 matrix einfuegen
+	for(i=0;i<knoten;i++){
+		for(j=0;j<knoten;j++){
+			zahlenarray[i][j]=zahl[k];
+			printf("%i ",zahlenarray[i][j]);
+			k++;
+		}
+		printf("\n");
+	}
+
+
+}
 
 /* Function to swap values at two pointers */
 void swap(char *x, char *y)
@@ -24,19 +65,17 @@ void swap(char *x, char *y)
    2. Starting index of the string
    3. Ending index of the string. */
 
-void permute(char *a, int l, int r,char**feld)
+void permute(char *a, int l, int r,char feld[][5])
 {
 	int i,j;
-	if (l == r){
+	int k;
 	static int x=0;
-
-		printf("a=%s",a);
-
+	if (l == r){
+		//kopiere die varianten in das feld
 		for(j=0;j<strlen(a);j++){
-			feld[x][j]=*(a+j);
+			feld[x][j]=       *(a+j);
 		}
-		printf("feld=%s\n",feld[x]);
-
+		x++;
 	}else{
 		for (i = l; i <= r; i++)
 		{
@@ -51,51 +90,158 @@ void permute(char *a, int l, int r,char**feld)
 /* Driver program to test above functions */
 
 
-
-
-void varianten1(){
-	char* ursp=NULL;
+void ausgabe(char feld[][5]){
 	int i;
-	int bin=1;
-printf("knoten=%i\n",knoten);
+	for(i=0;i<32;i++){
+		printf("%s\n",feld[i]);
 
-	//knotenpunkte 1-4
-	ursp=(char*)malloc(knoten*sizeof(char));
-
-	for(i=1;i<=knoten;i++){
-		*(ursp+i-1)=i+48;
-	//	printf("%c\n",*(ursp+i));
 	}
 
-printf("s=%s\n",ursp);
-
-	//anzahl an möglichkeiten die knoten zu kombinieren (binomialkoeffizient)
-	for(i=1;i<knoten+1;i++){
-		bin=bin*i;
-	}
-	printf("bin=%i\n",bin);
-
-	//platz für die möglichkeiten
-	char ** feld=NULL;
-	//reserviere zeilen Zeilenanzahl=binomialkoeffizient
-	feld=(char**)malloc(sizeof(char*)*bin);
-	//reserviere spalten spaltenanzahl=knoten +1 für string ende (<=)
-	for(i=0;i<=knoten;i++){
-		feld[i]=(char*)malloc(sizeof(char)*knoten);
-		feld[i][knoten]=0;
-	}
-	permute(ursp,0,knoten-1,feld);
+	/*
+	int i,j;
+	for(i=0;i<20;i++){
+	for(j=0;j<strlen(feld[i]);j++){
+		printf("%c-",feld[i][j]);
+	}}
+	 */
 }
 
 
 
 
+
+
+
+
+void varianten1(int node,char feld[][5]){
+	char* ursp=NULL;
+	int i;
+	int bin=1;
+
+
+
+	//knotenpunkte 1-4
+	ursp=(char*)malloc(node*sizeof(char));
+
+	for(i=1;i<=node;i++){
+		*(ursp+i-1)=i+48;
+		//	printf("%c\n",*(ursp+i));
+	}
+
+	//anzahl an möglichkeiten die node zu kombinieren (binomialkoeffizient)
+	for(i=1;i<node+1;i++){
+		bin=bin*i;
+	}
+
+
+	//dymanisch gehts nicht, warum auch immer.
+	/*
+	//platz für die möglichkeiten
+	char ** feld=NULL;
+	//reserviere zeilen Zeilenanzahl=binomialkoeffizient
+	feld=(char**)malloc(sizeof(char*)*bin);
+	//reserviere spalten spaltenanzahl=node +1 für string ende (<=)
+	for(i=0;i<=node;i++){
+		feld[i]=(char*)malloc(sizeof(char)*node);
+		feld[i][node]=0;
+	}
+	 */
+
+	//printf("%s\n",ursp);
+
+	/*1234
+
+	234
+	134
+	124
+	123
+
+	char temp1[5]={'0'};
+char temp2[5];
+	strcpy(&temp2,ursp);
+	int j;
+
+for(j=0;j<4;j++){
+	for(i=j;i<strlen(temp2);i++){
+temp1[i]=ursp[i+1];
+
+}
+
+	printf("%s\n",temp1);
+}
+	 */
+
+
+	permute(ursp,0,node-1,feld);
+
+
+
+	//return feld;
+}
+
+
+void distance(char feld[][5],int entfernungen[32], int zahlenarray[][knoten]){
+	int z=0,s=0;
+	int fahrt=0;
+	int pos=2;
+	int dist=0;
+	int i;
+	char strecke[8]={'0'};
+	char verbindung='-';
+	int j=0;
+	int feldgroesse=strlen(feld[fahrt]);
+	//fahrt
+	printf("feldgroeße=%i\n",feldgroesse);
+
+
+
+
+	//verbindung
+	for(i=0;i<=6;i=i+2){
+		strecke[i]=feld[fahrt][j];
+		if(i<feldgroesse+2){
+			strecke[i+1]=verbindung;
+		}
+		j++;
+	}
+	printf("\n%s",strecke);
+
+
+
+
+
+	//distanz
+	for(pos=0;pos<3;pos++){
+		s=feld[fahrt][pos]-48;
+		z=feld[fahrt][pos+1]-48;
+		s=abs(1-s);
+		z=abs(4-z);
+		dist=dist+zahlenarray[z][s];
+	}
+	printf("\t%i\n",dist);
+
+
+
+}
+
 int main()
 {
+	char feld[32][5]={'0'};
+	int zahlenarray[knoten][knoten];
+	int entfernungen[32];
 
+	int i;
+	int node=knoten;
 
+	for(i=0;i<knoten-1;i++){
+		node=knoten-i;
+		varianten1(node,feld);
+	}
 
-	varianten1();
+	ausgabe(feld);
+	readDB(zahlenarray);
+
+	distance(feld,entfernungen,zahlenarray);
 
 
 
