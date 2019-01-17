@@ -140,7 +140,6 @@ void distance(char feld[][knoten+1],int entfernungen[152], int zahlenarray[][kno
 		anz++;
 		i++;
 	}
-printf("distance\n");
 
 
 	for(k=0;k<anz;k++){
@@ -166,6 +165,7 @@ printf("distance\n");
 		//string ende
 		strecke[feldgroesse*2-1]='\0';
 
+//printf("distance\n");
 
 
 
@@ -175,15 +175,24 @@ printf("distance\n");
 			s=feld[fahrt][pos]-48;
 			z=feld[fahrt][pos+1]-48;
 			s=abs(1-s);
-			z=abs(4-z);
+			z=abs(knoten-z);
+			//printf("z=%i s=%i",z,s);
+			//temp1=entfernung
 			temp1=(float)zahlenarray[z][s];
+			//printf("strecke= %f ",temp1);
 			dist=dist+zahlenarray[z][s];
 			//fahrtzeit
 			s=feld[fahrt][pos]-48;
 			z=feld[fahrt][pos+1]-48;
-			s=abs(4-s);
+			s=abs(knoten-s);
 			z=abs(1-z);
+			//printf("z=%i s=%i",z,s);
+
+			//temp2= geschwindigkeit
 			temp2=(float)zahlenarray[s][z];
+			//printf("geschwindigkeit= %f ",temp2);
+
+
 			zeit=zeit+temp1*60/temp2;
 		}
 		zeit=zeit+(feldgroesse-2)*10;
@@ -192,8 +201,8 @@ printf("distance\n");
 		//ausgabe
 		//das .0 bewirkt dass gerundet wird
 		printf("\n%s\t\t",strecke);
-		//printf("%i\t",dist);
-		//printf("\t%.0f",zeit);
+		printf("%i\t",dist);
+		printf("\t%.0f",zeit);
 
 
 
