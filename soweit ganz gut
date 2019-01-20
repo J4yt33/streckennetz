@@ -1,0 +1,391 @@
+
+// C program to print all permutations with duplicates allowed
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define knoten 5
+
+void readDB(int zahlenarray[][knoten]){
+	FILE *fp;
+	char temp;
+	int i = 0;
+	int j=0;
+	int zahl[100]={};
+	int zeile=0;
+	fp = fopen("5knoten.txt", "r");
+	char array[120][knoten];
+	int k=0;
+	if(fp==NULL) {
+		printf("Konnte Datei nicht öffnen!\n");
+	}
+	//Lese alle Zahlen in ein char array
+	while((temp=fgetc(fp))!=EOF){
+		if(temp==10||temp==32){
+			zeile++;
+			i=0;
+		}else{
+			array[zeile][i]=temp;
+			i++;
+		}
+	}
+
+	//string to int
+	for(i=0;i<zeile;i++){
+		zahl[i]=atoi(array[i]);
+	}
+
+	//ints in 4x4 matrix einfuegen
+	for(i=0;i<knoten;i++){
+		for(j=0;j<knoten;j++){
+			zahlenarray[i][j]=zahl[k];
+			printf("%i ",zahlenarray[i][j]);
+			k++;
+		}
+		printf("\n");
+	}
+
+
+}
+
+/* Function to swap values at two pointers */
+void swap(char *x, char *y)
+{
+	char temp;
+	temp = *x;
+	*x = *y;
+	*y = temp;
+}
+
+/* Function to print permutations of string
+   This function takes three parameters:
+   1. String
+   2. Starting index of the string
+   3. Ending index of the string. */
+
+void permute(char *a, int l, int r,char feld[][knoten+1])
+{
+	int i,j;
+	static int x=0;
+	if (l == r){
+
+		//kopiere die varianten in das feld
+		for(j=0;j<strlen(a);j++){
+			feld[x][j]=       *(a+j);
+		}
+		feld[x][strlen(a)]='\0';
+		//printf("%s\n ",feld[x]);
+
+		x++;
+
+
+	}else{
+		for (i = l; i <= r; i++)
+		{
+			swap((a+l), (a+i));
+			permute(a, l+1, r,feld);
+			swap((a+l), (a+i)); //backtrack
+		}
+	}
+}
+
+
+/* Driver program to test above functions */
+
+
+
+
+
+
+
+
+
+
+
+void varianten1(int node,char feld[][knoten+1]){
+	char* ursp=NULL;
+	int i;
+	int g;
+	int o;
+	int doppelt=0;
+	int l=0;
+	//knotenpunkte 1-n
+	ursp=(char*)malloc((node+1)*sizeof(char));
+	ursp[node]='\0';
+
+	//erstelle ursprung
+	for(i=1;i<=node;i++){
+		*(ursp+i-1)=i+48;
+	}
+	int len=strlen(ursp);
+
+	//array für alle mods
+	char mod[5000][6]={'\0'};
+	//kopiere ursprung an erste stelle
+	for(i=0;i<len;i++){
+		mod[l][i]=ursp[i];
+	}
+	l++;
+
+
+
+	//erste modulationsstufe
+	char * temp=(char*)malloc(sizeof(char)*strlen(ursp));
+
+	int k,j=0;
+	for(k=0;k<strlen(ursp);k++){
+		for(i=0;i<strlen(ursp)-1;i++){
+			if (j==k)j++;
+			temp[i]=ursp[j];
+			j++;
+		}
+		j=0;
+
+
+		//prüfe auf duplikate
+		for(g=0;g<=l;g++){
+			if(strcmp(mod[g],temp)==0||strlen(temp)<2){
+				doppelt=1;
+				break;
+			}}
+		if(doppelt==0){
+			strcpy(mod[l],temp);
+			l++;
+		}
+		doppelt=0;
+
+
+		//zweite modulationsstufe
+		char * temp2=(char*)malloc(sizeof(char)*(strlen(ursp)-1));
+		int n;
+		for(n=0;n<strlen(ursp)-1;n++){
+			for(i=0;i<strlen(temp)-1;i++){
+				if (j==n)j++;
+				temp2[i]=temp[j];
+				j++;
+			}
+			j=0;
+
+			//prüfe auf duplikate
+			for(g=0;g<=l;g++){
+				if(strcmp(mod[g],temp2)==0||strlen(temp2)<2){
+					doppelt=1;
+					break;
+				}}
+			if(doppelt==0){
+				strcpy(mod[l],temp2);
+				l++;
+			}
+			doppelt=0;
+
+
+			char * temp3=(char*)malloc(sizeof(char)*(strlen(ursp)));
+
+			//dritte modulationsstufe
+			for(o=0;o<strlen(ursp)-2;o++){
+				for(i=0;i<strlen(temp)-1;i++){
+					if (j==o)j++;
+					temp3[i]=temp2[j];
+					j++;
+				}
+				j=0;
+
+				//prüfe auf duplikate
+				for(g=0;g<=l;g++){
+					if(strcmp(mod[g],temp3)==0||strlen(temp3)<2){
+						doppelt=1;
+						break;
+					}}
+				if(doppelt==0){
+					strcpy(mod[l],temp3);
+					l++;
+				}
+				doppelt=0;
+			}
+		}
+
+	}
+
+//weitergabe der daten an die permutationsfunktion
+
+	for(i=0;i<l;i++){
+		//printf("mod %i = %s\n",i,mod[i]);
+	permute(mod[i],0,strlen(mod[i])-1,feld);
+	}
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void distance(char feld[][knoten+1],int entfernungen[500], int zahlenarray[][knoten]){
+	int i=0,k;
+	int anz=0;
+	int z=0,s=0;
+	int pos;
+	int dist;
+	char strecke[9]={'\0'};
+	char verbindung='-';
+	int j;
+	float zeit;
+	float temp1;
+	float temp2;
+	//fahrt
+	int fahrt=0;
+
+	//berechne anzahl auszugebener daten
+	while(strchr(feld[i],'1')||strchr(feld[i],'2')||strchr(feld[i],'3')||strchr(feld[i],'4')){
+		anz++;
+		i++;
+
+	}
+	if(knoten==4)anz=anz-1;
+//if(knoten==5)anz=anz-2;
+printf("anzahl=%i",anz);
+
+	for(k=0;k<anz;k++){
+		dist=0;
+		j=0;
+		zeit=0;
+		temp1=0;
+		temp2=0;
+
+
+		int feldgroesse=strlen(feld[fahrt]);
+
+		//verbindung
+		for(i=0;i<feldgroesse+feldgroesse-1;i++){
+			if(i%2==0){
+				strecke[i]=feld[fahrt][j];
+				j++;
+			}else{
+				strecke[i]=verbindung;
+			}
+
+		}
+		//string ende
+		strecke[feldgroesse*2-1]='\0';
+
+		//printf("distance\n");
+
+
+
+
+		//distanz
+		for(pos=0;pos<feldgroesse-1;pos++){
+			s=feld[fahrt][pos]-48;
+			z=feld[fahrt][pos+1]-48;
+			s=abs(1-s);
+			z=abs(knoten-z);
+			//printf("z=%i s=%i",z,s);
+			//temp1=entfernung
+			temp1=(float)zahlenarray[z][s];
+			//printf("strecke= %f ",temp1);
+			dist=dist+zahlenarray[z][s];
+			//fahrtzeit
+			s=feld[fahrt][pos]-48;
+			z=feld[fahrt][pos+1]-48;
+			s=abs(knoten-s);
+			z=abs(1-z);
+			//printf("z=%i s=%i",z,s);
+
+			//temp2= geschwindigkeit
+			temp2=(float)zahlenarray[s][z];
+			//printf("geschwindigkeit= %f ",temp2);
+
+
+			zeit=zeit+temp1*60/temp2;
+		}
+		zeit=zeit+(feldgroesse-2)*10;
+
+
+		//ausgabe
+		//das .0 bewirkt dass gerundet wird
+		printf("\nFahrt No.%i\t",fahrt);
+		printf("%s\t\t",strecke);
+		printf("%i\t",dist);
+		printf("\t%.0f",zeit);
+
+
+
+
+
+		fahrt++;
+	}
+
+
+
+}
+
+int main()
+{
+
+	int bin=0;
+	int temp=1;
+	int i,j;
+	//ausgabe der moeglichen streckenkombinationen
+	//printf("Anzahl der moeglichen Streckenkombinationen mit\n");
+	for(j=knoten;j>1;j--){
+		for(i=1;i<=j;i++){
+			temp=temp*i;
+		}
+		bin=bin+temp;
+		//printf("%i Knoten = %i\n",j,temp);
+		temp=1;
+	}
+
+
+
+
+
+	char feld[500][knoten+1];
+	int zahlenarray[knoten][knoten];
+	int entfernungen[500];
+
+	int node=knoten;
+
+
+	//varianten
+	for(i=0;i<knoten-1;i++){
+		node=knoten-i;
+		varianten1(node,feld);
+	}
+
+	readDB(zahlenarray);
+
+	distance(feld,entfernungen,zahlenarray);
+
+
+
+
+
+	return 0;
+}
