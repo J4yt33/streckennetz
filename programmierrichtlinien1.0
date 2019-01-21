@@ -1,11 +1,35 @@
+// Dateiname: Streckennetz.c
 
-// C program to print all permutations with duplicates allowed
+// Das Programm liest aus einer Datei Entfernungen und Geschwindigkeiten eines Eisenbahnnetzes
+//	und gibt alle moeglichen Fahrtkombinationen mit Entfernung und Fahrtzeit auf dem Bildschirm aus.
+
+// Eingabeparameter mit zulässigem Wertebereich: Es kann die define Variable KNOTEN auf 5 geändert werden,
+//	in der Funktion ReadDB() muss dann allerdings auch der Dateiname angepasst werden auf
+//	den Dateinamen einer Textdatei die eine 5x5 Matrix enthaelt.
+
+// Ausgaben mit zulässigem Wertebereich: Anzahl der moeglichen Streckenkombinationen fuer Netze mit 2,3 oder 4 Knoten
+//	dann folgen links die Streckenkombinationen, in der Mitte die zurückgelegte Entfernung in km und rechts die Fahrtzeit, wobei jeder zwischenhalt 10 minuten dauert.
+//	die fahrtzeit wird gerundet ausgegeben
+
+// Autor: Jan Taschbach
+// Version: 1.0
+// Datum der letzten Änderung: 21.1.2019
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 
 #define KNOTEN 4
+
+// Funktionsname: ReadDB
+// Auslesen der Daten aus einer Textdatei und einfuegen in eine int Matrix
+
+// Eingabeparameter mit zulässigem Wertebereich: int ZahlenArray[KNOTEN][KNOTEN]
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: Jan Taschbach
+// Version: 1.0
+// Datum der letzten Änderung: 25.12.2018
 
 void ReadDB(int ZahlenArray[][KNOTEN]){
 	FILE *fp;
@@ -47,7 +71,15 @@ void ReadDB(int ZahlenArray[][KNOTEN]){
 
 }
 
+
+
+// Funktionsname: Swap
 /* Function to swap values at two pointers */
+// Eingabeparameter mit zulässigem Wertebereich: char *x,char*y
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/
+// Version: -
+// Datum der letzten Änderung: -
 void Swap(char *x, char *y)
 {
 	char Temp;
@@ -56,16 +88,18 @@ void Swap(char *x, char *y)
 	*y = Temp;
 }
 
-/* Function to print permutations of string
-   This function takes three parameters:
-   1. String
-   2. Starting index of the string
-   3. Ending index of the string. */
 
+// Funktionsname: Permute
+// Die Funktion berechnet alle permutationen eines Strings und speichert diese in einem array
+// Eingabeparameter mit zulässigem Wertebereich: 1.String char*a,2.start index des strings int l,3.end index des strings int r, 4. char array um alle permutationen zu speichern char Feld[500][KNOTEN+1]
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/
+// Version: 1.1
+// Datum der letzten Änderung: 21.1.2019
 void Permute(char *a, int l, int r,char Feld[][KNOTEN+1])
 {
 	int i,j,k;
-	 int NextFreeFeld=0;
+	int NextFreeFeld=0;
 	if (l == r){
 
 
@@ -74,9 +108,9 @@ void Permute(char *a, int l, int r,char Feld[][KNOTEN+1])
 			if(strlen(Feld[k])>1){
 				NextFreeFeld++;
 
-		}else{
-			break;
-		}
+			}else{
+				break;
+			}
 		}
 
 
@@ -102,17 +136,15 @@ void Permute(char *a, int l, int r,char Feld[][KNOTEN+1])
 }
 
 
-/* Driver program to test above functions */
-
-
-
-
-
-
-
-
-
-
+// Funktionsname: Varianten
+// Die Funktion berechnet alle Varianten eines Strings bsp. aus 1234 1.BaumEbene 234,134,124,123 und davon jeweils die weiteren varianten(BaumEbenen) bsp für die 2. BaumEbene 1. Ast aus
+//	234 mach 34,24,23 Dabei wird auf Duplikate geprueft da der von mir entwickelte algorithmus Duplikate erzeugt.
+//	Die verschiedenen Aeste werden dann alle in einem Array gespeichert die dann wiederum einer nach dem anderen an die funktion Permute übergeben werden die von jedem ast alle möglichen permutationen erzeugt.
+// Eingabeparameter mit zulässigem Wertebereich: char Feld[500][KNOTEN+1]
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: Jan Taschbach
+// Version: 1.1
+// Datum der letzten Änderung: 21.1.2019
 
 void Varianten(char Feld[][KNOTEN+1]){
 	char* Ursp=NULL;
@@ -253,12 +285,15 @@ void Varianten(char Feld[][KNOTEN+1]){
 
 
 
-/*die funktion nutzt die permutationen um in den eingelesenen Daten zu indizieren und
- * Distanz und fahrtzeit zu berechnen
- *
- *
- */
-void CombineData(char Feld[][KNOTEN+1],int Entfernungen[500], int ZahlenArray[][KNOTEN]){
+// Funktionsname: CombineData
+// die funktion nutzt die permutationen der verschiedenen aeste um in den eingelesenen Daten zu indizieren und
+// Distanz und fahrtzeit zu berechnen, die so errechneten Daten werden dann geordnet auf dem Bildschirm ausgegeben
+// Eingabeparameter mit zulässigem Wertebereich:char Feld[500][KNOTEN+1],int Entfernungen[500], int ZahlenArray[KNOTEN][KNOTEN]
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: Jan Taschbach
+// Version: 1.1
+// Datum der letzten Änderung: 21.1.2019
+void CombineData(char Feld[][KNOTEN+1], int ZahlenArray[][KNOTEN]){
 	int i=0,k;
 	int Anz=0;
 	int z=0,s=0;
@@ -272,6 +307,7 @@ void CombineData(char Feld[][KNOTEN+1],int Entfernungen[500], int ZahlenArray[][
 	float Geschwindigkeit;
 	//fahrt
 	int Fahrt=0;
+	int FeldGroesse;
 
 	//berechne anzahl auszugebener daten
 	while(strchr(Feld[i],'1')||strchr(Feld[i],'2')||strchr(Feld[i],'3')||strchr(Feld[i],'4')){
@@ -289,7 +325,7 @@ void CombineData(char Feld[][KNOTEN+1],int Entfernungen[500], int ZahlenArray[][
 		Geschwindigkeit=0;
 
 
-		int FeldGroesse=strlen(Feld[Fahrt]);
+		FeldGroesse=strlen(Feld[Fahrt]);
 
 		//verbindung
 		for(i=0;i<FeldGroesse+FeldGroesse-1;i++){
@@ -304,7 +340,6 @@ void CombineData(char Feld[][KNOTEN+1],int Entfernungen[500], int ZahlenArray[][
 		//string ende
 		Strecke[FeldGroesse*2-1]='\0';
 
-		//printf("distance\n");
 
 
 
@@ -358,20 +393,21 @@ void CombineData(char Feld[][KNOTEN+1],int Entfernungen[500], int ZahlenArray[][
 
 
 
+// Funktionsname: main
+// die funktion erstellt die arrays int ZahlenArray[KNOTEN][KNOTEN, int Entfernungen[500],char Feld[500][KNOTEN+1] und übergibt diese an die anderen Funktionen / ruft diese auf
+// Eingabeparameter mit zulässigem Wertebereich: -
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: Jan Taschbach
+// Version: 1.1
+// Datum der letzten Änderung: 21.1.2019
 
 
 
-int main()
+void main()
 {
-
-
-
-
-
-
-
+	//array um die Daten aus der Textdatei zu speichern
 	int ZahlenArray[KNOTEN][KNOTEN];
-	int Entfernungen[500];
+	//array um die fahrtstrecken kombinationen und permutationen zu speichern
 	char Feld[500][KNOTEN+1]={'0'};
 
 
@@ -382,15 +418,11 @@ int main()
 
 
 
-
+	//Berechnung der moeglichen Streckenkombinationen
 	Varianten(Feld);
+	//Auslesen der Daten aus Textdatei
 	ReadDB(ZahlenArray);
+	//berechnung mit hilfe der vorher gesammelten Daten und ausgabe
+	CombineData(Feld,ZahlenArray);
 
-	CombineData(Feld,Entfernungen,ZahlenArray);
-
-
-
-
-
-	return 0;
 }
