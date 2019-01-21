@@ -72,7 +72,6 @@ void ReadDB(int ZahlenArray[][KNOTEN]){
 }
 
 
-
 // Funktionsname: Swap
 /* Function to swap values at two pointers */
 // Eingabeparameter mit zulässigem Wertebereich: char *x,char*y
@@ -90,7 +89,7 @@ void Swap(char *x, char *y)
 
 
 // Funktionsname: Permute
-// Die Funktion berechnet alle permutationen eines Strings und speichert diese in einem array
+// Die Funktion berechnet alle permutationen eines Strings mit Hilfe von Backtracking und speichert diese in einem array
 // Eingabeparameter mit zulässigem Wertebereich: 1.String char*a,2.start index des strings int l,3.end index des strings int r, 4. char array um alle permutationen zu speichern char Feld[500][KNOTEN+1]
 // Rückgabeparameter mit zulässigem Wertebereich: -
 // Autor: https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/
@@ -98,8 +97,10 @@ void Swap(char *x, char *y)
 // Datum der letzten Änderung: 21.1.2019
 void Permute(char *a, int l, int r,char Feld[][KNOTEN+1])
 {
+	//zaehlvariablen
 	int i,j,k;
 	int NextFreeFeld=0;
+
 	if (l == r){
 
 
@@ -119,10 +120,6 @@ void Permute(char *a, int l, int r,char Feld[][KNOTEN+1])
 		for(j=0;j<strlen(a);j++){
 			Feld[NextFreeFeld][j]=       *(a+j);
 		}
-		Feld[NextFreeFeld][strlen(a)]='\0';
-		//printf("%s\n ",feld[x]);
-
-		NextFreeFeld++;
 
 
 	}else{
@@ -147,35 +144,37 @@ void Permute(char *a, int l, int r,char Feld[][KNOTEN+1])
 // Datum der letzten Änderung: 21.1.2019
 
 void Varianten(char Feld[][KNOTEN+1]){
-	char* Ursp=NULL;
+	//zählvariablen
 	int i;
 	int g;
 	int o;
 	int n;
 	int k,j=0;
-	int Doppelt=0;
 	int l=0;
+	//variable zur überprüfung auf duplikate
+	int Doppelt=0;
+	//temp variablen um die Baumebenen zwischenzuspeichern zum weiteren verarbeiten
 	char BaumEbene1[KNOTEN];
 	char * BaumEbene2=(char*)malloc(sizeof(char)*(KNOTEN-1));
 	char BaumEbene3[KNOTEN];
+	//variable um den ursprungs string aus der variablen KNOTEN zu erstellen
+	char* Ursp=NULL;
 	Ursp=(char*)malloc((KNOTEN+1)*sizeof(char));
+	//array um die einzelnen aeste zu speichern, diese werden dann an die permute übergeben zur weiteren verarbeitung
 	char Aeste[5000][6]={'\0'};
+
 	//erstelle ursprung
 	for(i=1;i<=KNOTEN;i++){
 		*(Ursp+i-1)=i+48;
 	}
 
-	//array für alle mods
 	//kopiere ursprung an erste stelle
 	for(i=0;i<KNOTEN;i++){
 		Aeste[l][i]=Ursp[i];
 	}
 	l++;
 
-
-
-	//erste modulationsstufe
-
+	//erste Baumebene
 	for(k=0;k<strlen(Ursp);k++){
 		for(i=0;i<strlen(Ursp)-1;i++){
 			if (j==k)j++;
@@ -198,9 +197,7 @@ void Varianten(char Feld[][KNOTEN+1]){
 		Doppelt=0;
 
 
-		//zweite modulationsstufe
-
-
+		//zweite Baumebene
 		for(n=0;n<strlen(Ursp)-1;n++){
 			for(i=0;i<strlen(BaumEbene1)-1;i++){
 				if (j==n)j++;
@@ -223,7 +220,7 @@ void Varianten(char Feld[][KNOTEN+1]){
 
 
 
-			//dritte modulationsstufe
+			//dritte Baumebene
 			for(o=0;o<strlen(Ursp)-2;o++){
 				for(i=0;i<strlen(BaumEbene1)-1;i++){
 					if (j==o)j++;
@@ -245,44 +242,13 @@ void Varianten(char Feld[][KNOTEN+1]){
 				Doppelt=0;
 			}
 		}
-
 	}
 
 	//weitergabe der daten an die permutationsfunktion
-
 	for(i=0;i<l;i++){
 		Permute(Aeste[i],0,strlen(Aeste[i])-1,Feld);
 	}
-
-
-
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // Funktionsname: CombineData
@@ -313,9 +279,7 @@ void CombineData(char Feld[][KNOTEN+1], int ZahlenArray[][KNOTEN]){
 	while(strchr(Feld[i],'1')||strchr(Feld[i],'2')||strchr(Feld[i],'3')||strchr(Feld[i],'4')){
 		Anz++;
 		i++;
-
 	}
-
 
 	for(k=0;k<Anz;k++){
 		Dist=0;
@@ -323,8 +287,6 @@ void CombineData(char Feld[][KNOTEN+1], int ZahlenArray[][KNOTEN]){
 		Zeit=0;
 		Entfernung=0;
 		Geschwindigkeit=0;
-
-
 		FeldGroesse=strlen(Feld[Fahrt]);
 
 		//verbindung
@@ -373,9 +335,9 @@ void CombineData(char Feld[][KNOTEN+1], int ZahlenArray[][KNOTEN]){
 
 
 		//ausgabe
-		//das .0 bewirkt dass gerundet wird
 		printf("\n%s\t\t",Strecke);
 		printf("%i\t",Dist);
+		//das .0 bewirkt dass gerundet wird
 		printf("\t%.0f",Zeit);
 
 
