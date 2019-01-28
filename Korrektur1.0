@@ -1,0 +1,398 @@
+// Dateiname: Streckennetz.c
+
+// Das Programm liest aus einer Datei Entfernungen und Geschwindigkeiten eines Eisenbahnnetzes
+//	und gibt alle moeglichen Fahrtkombinationen mit Entfernung und Fahrtzeit auf dem Bildschirm aus.
+
+// Eingabeparameter mit zulässigem Wertebereich: Es kann die define Variable KNOTEN auf 5 geändert werden,
+//	in der Funktion ReadDB() muss dann allerdings auch der Dateiname angepasst werden auf
+//	den Dateinamen einer Textdatei die eine 5x5 Matrix enthaelt.
+
+// Ausgaben mit zulässigem Wertebereich: Anzahl der moeglichen Streckenkombinationen fuer Netze mit 2,3 oder 4 Knoten
+//	dann folgen links die Streckenkombinationen, in der Mitte die zurückgelegte Entfernung in km und rechts die Fahrtzeit, wobei jeder zwischenhalt 10 minuten dauert.
+//	die fahrtzeit wird gerundet ausgegeben
+
+// Autor: Jan Taschbach
+// Version: 1.0
+// Datum der letzten Änderung: 21.1.2019
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define KNOTEN 4
+
+
+
+// Funktionsname: ReadDB
+// Auslesen der Daten aus einer Textdatei und einfuegen in eine int Matrix
+
+// Eingabeparameter mit zulässigem Wertebereich: int ZahlenArray[KNOTEN][KNOTEN]
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: Jan Taschbach
+// Version: 1.0
+// Datum der letzten Änderung: 25.12.2018
+
+void ReadDB(int ZahlenArray[][KNOTEN]){
+	//pointer um aus der datei zeichen für zeichen zu lesen
+	FILE *fp;
+	//zwischenspeicher zum auslesen der datei
+	char Temp;
+	//zaehlvariablen
+	int i = 0;
+	int Spalte=0;//indizierung der Spalten in Array
+	int k=0;//indiziert die Zahlen die dann in die Matrix eingefügt werden
+	//zwischenspeicher fürs einfügen in die matrix
+	int Zahl[100]={};
+	int Zeile=0; 	//zeilenpositionierung im array
+	//temporäres array
+	char Array[120][KNOTEN];
+
+	//  setze filepointer auf datei lesend
+	fp = fopen("knoten.txt", "r");
+	//pruefe ob datei geöffnet werden kann
+	if(fp==NULL)printf("Konnte Datei nicht öffnen!\n");
+
+
+	//Lese alle Zahlen in ein char array
+	while((Temp=fgetc(fp))!=EOF){
+		if(Temp==10||Temp==32){
+			Zeile++;
+			Spalte=0;
+		}else{
+			Array[Zeile][Spalte]=Temp;
+			Spalte++;
+		}
+	}
+
+	//string to int
+	for(k=0;k<Zeile;k++){
+		Zahl[k]=atoi(Array[k]);
+	}
+
+	//rücksetzen der Zählvariablen
+	Zeile=0;
+	Spalte=0;
+	k=0;
+	//ints in 4x4 matrix einfuegen
+	for(Zeile=0;Zeile<KNOTEN;Zeile++){
+		for(Spalte=0;Spalte<KNOTEN;Spalte++){
+			ZahlenArray[Zeile][Spalte]=Zahl[k];
+			k++;
+		}
+	}
+}
+
+
+// Funktionsname: Swap
+/* Function to swap values at two pointers */
+// Eingabeparameter mit zulässigem Wertebereich: char *x,char*y
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/
+// Version: -
+// Datum der letzten Änderung: -
+void Swap(char *x, char *y)
+{
+	char Temp;
+	Temp = *x;
+	*x = *y;
+	*y = Temp;
+}
+
+
+// Funktionsname: Permute
+// Die Funktion berechnet alle permutationen eines Strings mit Hilfe von Backtracking und speichert diese in einem array
+// Eingabeparameter mit zulässigem Wertebereich: 1.String char*a,2.start index des strings int l,3.end index des strings int r, 4. char array um alle permutationen zu speichern char Feld[500][KNOTEN+1]
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/
+// Version: 1.1
+// Datum der letzten Änderung: 21.1.2019
+void Permute(char *a, int l, int r,char Feld[][KNOTEN+1])
+{
+	//zaehlvariablen
+	int i=0,j=0,k=0;
+	//nötig um das naechste frei feld zu bestimmen
+	int NextFreeFeld=0;
+
+	if (l == r){
+		//da static int x nicht erlaubt ist muss das halt so, schau welches Feld als nächstes frei ist
+		for(k=0;k<400;k++){
+			if(strlen(Feld[k])>1){
+				NextFreeFeld++;
+			}else{
+				break;
+			}
+		}
+		//kopiere die varianten in das feld
+		for(j=0;j<strlen(a);j++){
+			Feld[NextFreeFeld][j]=       *(a+j);
+		}
+
+	}else{
+		for (i = l; i <= r; i++)
+		{
+			Swap((a+l), (a+i));
+			Permute(a, l+1, r,Feld);
+			Swap((a+l), (a+i)); //backtrack
+		}
+	}
+}
+
+
+// Funktionsname: Varianten
+// Die Funktion berechnet alle Varianten eines Strings bsp. aus 1234 1.BaumEbene 234,134,124,123 und davon jeweils die weiteren varianten(BaumEbenen) bsp für die 2. BaumEbene 1. Ast aus
+//	234 mach 34,24,23 Dabei wird auf Duplikate geprueft da der von mir entwickelte algorithmus Duplikate erzeugt.
+//	Die verschiedenen Aeste werden dann alle in einem Array gespeichert die dann wiederum einer nach dem anderen an die funktion Permute übergeben werden die von jedem ast alle möglichen permutationen erzeugt.
+// Eingabeparameter mit zulässigem Wertebereich: char Feld[500][KNOTEN+1]
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: Jan Taschbach
+// Version: 1.1
+// Datum der letzten Änderung: 21.1.2019
+
+void Varianten(char Feld[][KNOTEN+1]){
+	//zählvariablen
+	//zählvariablen richtig kommentieren
+	int i=0;//Erstellung der Baumebenen, indiziert die Zeichen in einer baumebene (Destination) , wird außerdem zum erstellen des Ursprungs verwendet.
+	int g=0;//zum vergleichen der aeste auf duplikate
+	int o=0;//3. Baumebene
+	int n=0;//2.Baumebene
+	int k=0;//1.Baumebene
+	int j=0;//indiziert die zeichen in einer Baumebene (Source)
+	int l=0;	//zählt die aeste hoch
+
+	//variable zur überprüfung auf duplikate
+	int Doppelt=0;
+
+	//array um die einzelnen aeste zu speichern, diese werden dann an die permute übergeben zur weiteren verarbeitung
+	char Aeste[500][6]={'\0'};
+	//temp variablen um die Baumebenen zwischenzuspeichern zum weiteren verarbeiten
+	char BaumEbene1[KNOTEN-1];
+	char BaumEbene2[KNOTEN-2];
+	char BaumEbene3[KNOTEN-3];
+	//variable um den ursprungs string aus der variablen KNOTEN zu erstellen
+	char* Ursp=NULL;
+	Ursp=(char*)malloc((KNOTEN+1)*sizeof(char));
+
+	//pruefe ob speicher verfügbar und gib fehlermeldung aus falls nicht genug Speicher zur verfügung steht
+	if(Ursp==NULL)printf("Nicht genug freier speicher verfügbar.\n");
+
+
+
+
+	//erstelle ursprung
+	for(i=1;i<=KNOTEN;i++){
+		*(Ursp+i-1)=i+48;
+	}
+
+	//kopiere ursprung an erste stelle
+	for(i=0;i<KNOTEN;i++){
+		Aeste[l][i]=Ursp[i];
+	}
+	l++;
+
+	//erste Baumebene
+	for(k=0;k<strlen(Ursp);k++){
+		for(i=0;i<strlen(Ursp)-1;i++){
+			if (j==k)j++;
+			BaumEbene1[i]=Ursp[j];
+			j++;
+		}
+		j=0;
+
+		//prüfe auf duplikate
+		for(g=0;g<=l;g++){
+			if(strcmp(Aeste[g],BaumEbene1)==0||strlen(BaumEbene1)<2){
+				Doppelt=1;
+				break;
+			}}
+		if(Doppelt==0){
+			strcpy(Aeste[l],BaumEbene1);
+			l++;
+		}
+		Doppelt=0;
+
+		//zweite Baumebene
+		for(n=0;n<strlen(Ursp)-1;n++){
+			for(i=0;i<strlen(BaumEbene1)-1;i++){
+				if (j==n)j++;
+				BaumEbene2[i]=BaumEbene1[j];
+				j++;
+			}
+			j=0;
+
+			//prüfe auf duplikate
+			for(g=0;g<=l;g++){
+				if(strcmp(Aeste[g],BaumEbene2)==0||strlen(BaumEbene2)<2){
+					Doppelt=1;
+					break;
+				}}
+			if(Doppelt==0){
+				strcpy(Aeste[l],BaumEbene2);
+				l++;
+			}
+			Doppelt=0;
+
+			//dritte Baumebene
+			for(o=0;o<strlen(Ursp)-2;o++){
+				for(i=0;i<strlen(BaumEbene1)-1;i++){
+					if (j==o)j++;
+					BaumEbene3[i]=BaumEbene2[j];
+					j++;
+				}
+				j=0;
+
+				//prüfe auf duplikate
+				for(g=0;g<=l;g++){
+					if(strcmp(Aeste[g],BaumEbene3)==0||strlen(BaumEbene3)<2){
+						Doppelt=1;
+						break;
+					}}
+				if(Doppelt==0){
+					strcpy(Aeste[l],BaumEbene3);
+					l++;
+				}
+				Doppelt=0;
+			}
+		}
+	}
+
+	//weitergabe der daten an die permutationsfunktion
+	for(i=0;i<l;i++){
+		Permute(Aeste[i],0,strlen(Aeste[i])-1,Feld);
+	}
+}
+
+
+// Funktionsname: CombineData
+// die funktion nutzt die permutationen der verschiedenen aeste um in den eingelesenen Daten zu indizieren und
+// Distanz und fahrtzeit zu berechnen, die so errechneten Daten werden dann geordnet auf dem Bildschirm ausgegeben
+// Eingabeparameter mit zulässigem Wertebereich:char Feld[500][KNOTEN+1],int Entfernungen[500], int ZahlenArray[KNOTEN][KNOTEN]
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: Jan Taschbach
+// Version: 1.1
+// Datum der letzten Änderung: 21.1.2019
+void CombineData(char Feld[][KNOTEN+1], int ZahlenArray[][KNOTEN]){
+	//zählvariablen
+	int i=0,k=0;
+	int j=0;
+	//bestimmung der groesse des char Feld array
+	int Anz=0;
+	//zeile und spalte indexierung in der aus datei gelesenen und erstellten matrix
+	int z=0,s=0;
+	//zwischenhalt zählvariable
+	int Station=0;
+	//distanz
+	int Dist=0;
+	//hier drin wird die auszugebene strecke aufgebaut
+	char Strecke[9]={'\0'};
+	//verbindung zwischen den strecken, kommt auch in die Strecken variable
+	char Verbindung='-';
+	//hier wird die auszugebene fahrtzeit gespeichert
+	float Zeit=0;
+	//zurückgelegte entfernung
+	float Entfernung=0;
+	//zwischenspeicher für geschwindigkeit zwischen den einzelnen strecken, mit ihr wird die fahrtzeit berechnet
+	float Geschwindigkeit=0;
+	//fahrtNo
+	int Fahrt=0;
+	//anzahl von fahrten pro jeweiliger strecke
+	int FeldGroesse=0;
+
+
+	//berechne anzahl auszugebener daten
+	while(strchr(Feld[i],'1')||strchr(Feld[i],'2')||strchr(Feld[i],'3')||strchr(Feld[i],'4')){
+		Anz++;
+		i++;
+	}
+
+	//berechne für alle fahrten
+	for(k=0;k<Anz;k++){
+		//rücksetzen der variablenwerte beim anfang der neuen fahrt
+		Dist=0;
+		j=0;
+		Zeit=0;
+		Entfernung=0;
+		Geschwindigkeit=0;
+		FeldGroesse=strlen(Feld[Fahrt]);
+
+		//fuege verbindungs symbol in Strecke zwischen die einzelnen stationen
+		//verbindung
+		for(i=0;i<FeldGroesse+FeldGroesse-1;i++){
+			if(i%2==0){
+				Strecke[i]=Feld[Fahrt][j];
+				j++;
+			}else{
+				Strecke[i]=Verbindung;
+			}
+		}
+
+		//string ende einfügen
+		Strecke[FeldGroesse*2-1]='\0';
+
+		//indizierung in aus den daten der ausgelesenen datei erstellten matrix mithilfe der berechneten streckenkombinationen
+		for(Station=0;Station<FeldGroesse-1;Station++){
+			//entfernung
+			s=Feld[Fahrt][Station]-48;
+			z=Feld[Fahrt][Station+1]-48;
+			s=abs(1-s);
+			z=abs(KNOTEN-z);
+			Entfernung=(float)ZahlenArray[z][s];
+			Dist=Dist+ZahlenArray[z][s];
+			//geschwindigkeit
+			s=Feld[Fahrt][Station]-48;
+			z=Feld[Fahrt][Station+1]-48;
+			s=abs(KNOTEN-s);
+			z=abs(1-z);
+			Geschwindigkeit=(float)ZahlenArray[s][z];
+			//berechnung fahrtzeit
+			Zeit=Zeit+Entfernung*60/Geschwindigkeit;
+		}
+		//füge zeit für die zwischenhalte ein
+		Zeit=Zeit+(FeldGroesse-2)*10;
+
+		//ausgabe
+		printf("\n%s\t\t",Strecke);
+		printf("%i\t",Dist);
+		//das .0 bewirkt dass gerundet wird
+		printf("\t%.0f",Zeit);
+
+		//nächste fahrt
+		Fahrt++;
+	}
+}
+
+
+//2 matrizen erstellen eine nur für weg und eine nur für geschwindigkeiten und die dann an der diagonalen spiegeln
+//damit der weg für 3-4 der gleiche ist wie für 4-3
+
+
+// Funktionsname: main
+// die funktion erstellt die arrays int ZahlenArray[KNOTEN][KNOTEN, int Entfernungen[500],char Feld[500][KNOTEN+1] und übergibt diese an die anderen Funktionen / ruft diese auf
+// Eingabeparameter mit zulässigem Wertebereich: -
+// Rückgabeparameter mit zulässigem Wertebereich: -
+// Autor: Jan Taschbach
+// Version: 1.1
+// Datum der letzten Änderung: 21.1.2019
+
+void main()
+{
+	//array um die Daten aus der Textdatei zu speichern
+	int ZahlenArray[KNOTEN][KNOTEN]={{0}};
+
+	//array um die fahrtstrecken kombinationen und permutationen zu speichern
+	char Feld[500][KNOTEN+1]={{'0'}};
+
+
+	//ausgabe aller möglichen kombinationen
+	printf("Anzahl der möglichen Streckenkombinationen mit 4 Knoten = 60\nAnzahl der möglichen Streckenkombinationen mit 3 Knoten = 12\nAnzahl der möglichen Streckenkombinationen mit 2 Knoten = 2\n");
+
+	//Berechnung der moeglichen Streckenkombinationen
+	Varianten(Feld);
+
+	//Auslesen der Daten aus Textdatei
+	ReadDB(ZahlenArray);
+
+	//berechnung mit hilfe der vorher gesammelten Daten und ausgabe
+	CombineData(Feld,ZahlenArray);
+
+}
